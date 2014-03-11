@@ -1,5 +1,6 @@
 # Sublime project/workspace
-*.sublime*
+*.sublime-project
+*.sublime-workspace
 
 # Mac OS X crap
 .DS_Store

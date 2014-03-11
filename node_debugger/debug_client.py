@@ -1,11 +1,11 @@
 import json
-import queue
 import socket
 import threading
 
 import sublime
 
 from . import globals
+
 
 class DebugClient(object):
 	"""Implementation of V8 debug protocol client."""
@@ -76,11 +76,9 @@ class DebugReader(threading.Thread):
 		super(DebugReader, self).__init__()
 		self.conn = conn
 		self.daemon = True
-		self.queue = queue.Queue()
 
 	def run(self):
 		c = self.conn
-		q = self.queue
 		buf = b''
 		length = 0
 		needHeaders = True
@@ -93,7 +91,6 @@ class DebugReader(threading.Thread):
 				globals.client = None
 				data = None
 			if data is None:
-				q.put(data)
 				break
 			buf = buf + data
 
@@ -119,7 +116,6 @@ class DebugReader(threading.Thread):
 					# print('[DEBUG]', 'RAW', buf)
 					# TODO: handle json errors
 					tmp = json.loads(tmp)
-					q.put(tmp)
 					if tmp['type'] == 'response':
 						client._invoke_callback(tmp)
 					else: # type: 'event'

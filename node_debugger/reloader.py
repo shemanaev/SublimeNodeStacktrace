@@ -1,7 +1,7 @@
 import sys
 
 from imp import reload
-from .mod_prefix import prefix
+from .mod_prefix import prefix, full_prefix
 
 reload_mods = []
 for mod in sys.modules:
@@ -10,11 +10,16 @@ for mod in sys.modules:
 
 mods_load_order = [
 	'',
-	'.debugger.globals',
-	'.debugger.debug_client'
+
+	'.node_debugger',
+	'.node_debugger.globals',
+	'.node_debugger.debug_client',
+
+	'.commands',
+	'.commands.attach_debugger'
 ]
 
 for suffix in mods_load_order:
-	mod = prefix + suffix
+	mod = full_prefix + suffix
 	if mod in reload_mods:
 		reload(sys.modules[mod])
