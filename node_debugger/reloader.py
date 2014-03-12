@@ -11,12 +11,13 @@ for mod in sys.modules:
 mods_load_order = [
 	'',
 
-	'.node_debugger',
-	'.node_debugger.globals',
-	'.node_debugger.debug_client',
+	'.logger',
+	'.globals',
+	'.mod_prefix',
+	'.debug_client',
 
 	'.commands',
-	'.commands.attach_debugger'
+	'.commands.attach_debugger',
 ]
 
 for suffix in mods_load_order:
