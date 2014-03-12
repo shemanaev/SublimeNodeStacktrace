@@ -37,8 +37,8 @@ class DebugClient(object):
 			k = data.get('request_seq', data['command'])
 			c[k](data)
 			del c[k]
-		except:
-			log('_invoke_callback', 'Callback not found')
+		except (Exception) as e:
+			log('_invoke_callback', 'Callback not found', e)
 
 	def _invoke_event(self, data):
 		log('_invoke_event', data)
@@ -46,8 +46,8 @@ class DebugClient(object):
 			c = self._event_handlers
 			k = data['event']
 			c[k](data)
-		except:
-			log('_invoke_event', 'Event handler not found')
+		except (Exception) as e:
+			log('_invoke_event', 'Event handler not found', e)
 
 	def _make_request(self, data):
 		"""Generate request data."""
