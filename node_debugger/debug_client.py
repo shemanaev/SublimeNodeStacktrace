@@ -2,96 +2,126 @@ import json
 import socket
 import threading
 
-import sublime
+from . import logger
 
-from . import globals
+log = logger.get('debug_client')
 
+DEFAULT_IP = '127.0.0.1'
+DEFAULT_PORT = 5858
 
 class DebugClient(object):
 	"""Implementation of V8 debug protocol client."""
 
-	def __init__(self):
+	def __init__(self, address=None):
 		self._reqId = 0
+		self._on_disconnect = None
 		self._callbacks = {}
 		self._event_handlers = {}
-		self._conn = socket.create_connection(("127.0.0.1", 5858))
-		self._reader = DebugReader(self, self._conn)
+		self._conn = socket.create_connection(self._parse_address(address))
+		self._reader = DebugReader(self)
 		self._reader.start()
 
+	def _parse_address(self, address):
+		"""Convert address string into tuple."""
+		if address is None:
+			return (DEFAULT_IP, DEFAULT_PORT)
+		idx = address.find(':')
+		if idx != -1:
+			return (address[:idx], int(address[idx + 1:]))
+		return (address, DEFAULT_PORT)
+
 	def _invoke_callback(self, data):
-		cb = self._callbacks[data['request_seq']]
-		if not cb is None:
-			cb(data)
+		log('_invoke_callback', data)
+		try:
+			c = self._callbacks
+			k = data.get('request_seq', data['command'])
+			c[k](data)
+			del c[k]
+		except:
+			log('_invoke_callback', 'Callback not found')
 
 	def _invoke_event(self, data):
-		cb = self._event_handlers[data['command']]
-		if not cb is None:
-			cb(data)
+		log('_invoke_event', data)
+		try:
+			c = self._event_handlers
+			k = data['command']
+			c[k](data)
+			del c[k]
+		except:
+			log('_invoke_event', 'Callback not found')
 
 	def _make_request(self, data):
 		"""Generate request data."""
-
 		jsonData = json.dumps(data)
 		buf = 'Content-Length: ' + str(len(jsonData)) + '\r\n\r\n' + jsonData
 		return bytes(buf, 'utf8')
 
-	def execute(self, command, args=None, callback=None):
+	def execute(self, command, callback=None, sync=False, **args):
 		"""Execute remote V8 debugger command."""
-
+		log('execute', command, args, callback)
 		data = {}
 		data['seq'] = self._reqId
 		data['type'] = 'request'
 		data['command'] = command
-		if not args is None:
+		if args:
 			data['arguments'] = args
-		if not callback is None:
-			self._callbacks[self._reqId] = callback
+		if callback:
+			c = self._callbacks
+			if sync:
+				c[command] = callback
+			else:
+				c[self._reqId] = callback
 
 		self._reqId = self._reqId + 1
-
 		buf = self._make_request(data)
+		log('sent', buf)
 		self._conn.send(buf)
 
-	def get_reply(self):
-		"""Get reply from V8 debugger."""
-
-		return self._reader.queue.get_nowait()
+	def disconnect(self):
+		"""Disconnect from active debugger session and close connection."""
+		self.execute('disconnect')
+		self.close()
 
 	def close(self):
 		"""Close connection to debugger."""
-
-		# self.execute('disconnect')
-		self._reader._stop()
+		self._reader.stop()
 		self._conn.close()
 
+	def on_disconnect(self, callback):
+		"""Register handler for `disconnect` event."""
+		self._on_disconnect = callback
+
 	def add_handler(self, event, callback):
-		"""Register handler for debugger event"""
+		"""Register handler for debugger event."""
 		self._event_handlers[event] = callback
 
 
 class DebugReader(threading.Thread):
 	"""Reads debugger replies in another thread."""
 
-	def __init__(self, client, conn):
+	def __init__(self, client):
 		super(DebugReader, self).__init__()
-		self.conn = conn
+		self._client = client
 		self.daemon = True
 
+	def stop(self):
+		self.alive = False
+
 	def run(self):
-		c = self.conn
+		c = self._client
 		buf = b''
 		length = 0
 		needHeaders = True
-		while True:
+		self.alive = True
+		while self.alive:
 			try:
-				data = c.recv(4 * 1024)
+				data = c._conn.recv(4 * 1024)
 			except (IOError) as e:
-				sublime.error_message('Connection closed: %s' % e)
-				if globals.client: globals.client.close()
-				globals.client = None
-				data = None
-			if data is None:
+				log('Connection closed', e)
+				cb = c._on_disconnect
+				if cb: cb(e)
 				break
+
 			buf = buf + data
 
 			if needHeaders:
@@ -106,20 +136,19 @@ class DebugReader(threading.Thread):
 					headers[t[0]] = t[1]
 				needHeaders = False
 				length = int(headers['Content-Length'])
-				print('[DEBUG]', 'Headers', headers)
+				log('Headers', headers)
 
 			if not needHeaders:
 				if len(buf) != length: continue
 				# JSON body received
 				tmp = buf.decode('utf8')
+				log('Data', tmp)
 				if len(tmp) > 0:
-					# print('[DEBUG]', 'RAW', buf)
 					# TODO: handle json errors
 					tmp = json.loads(tmp)
 					if tmp['type'] == 'response':
-						client._invoke_callback(tmp)
+						c._invoke_callback(tmp)
 					else: # type: 'event'
-						client._invoke_event(tmp)
-				print('[DEBUG]', 'Data', tmp)
+						c._invoke_event(tmp)
 				buf = b''
 				needHeaders = True
