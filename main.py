@@ -1,5 +1,10 @@
 import sys
 
+# Disconnect from active session if any
+from .node_debugger import globals
+if globals.client:
+	globals.client.disconnect()
+
 # Make sure that ST3 updates all our modules
 from .node_debugger.mod_prefix import full_prefix
 reloader_name = full_prefix + '.reloader'
