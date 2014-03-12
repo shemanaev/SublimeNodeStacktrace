@@ -44,11 +44,10 @@ class DebugClient(object):
 		log('_invoke_event', data)
 		try:
 			c = self._event_handlers
-			k = data['command']
+			k = data['event']
 			c[k](data)
-			del c[k]
 		except:
-			log('_invoke_event', 'Callback not found')
+			log('_invoke_event', 'Event handler not found')
 
 	def _make_request(self, data):
 		"""Generate request data."""
@@ -56,8 +55,7 @@ class DebugClient(object):
 		buf = 'Content-Length: ' + str(len(jsonData)) + '\r\n\r\n' + jsonData
 		return bytes(buf, 'utf8')
 
-	def execute(self, command, callback=None, sync=False, **args):
-		"""Execute remote V8 debugger command."""
+	def _execute(self, command, callback, sync, args):
 		log('execute', command, args, callback)
 		data = {}
 		data['seq'] = self._reqId
@@ -77,15 +75,26 @@ class DebugClient(object):
 		log('sent', buf)
 		self._conn.send(buf)
 
-	def disconnect(self):
-		"""Disconnect from active debugger session and close connection."""
-		self.execute('disconnect')
-		self.close()
+	# TODO: optional context for callback?
+	def execute(self, command, callback=None, **args):
+		"""Execute remote V8 debugger command."""
+		self._execute(command, callback, False, args)
+
+	def execute_sync(self, command, callback=None, **args):
+		"""Execute remote V8 debugger command with broken `request_seq`."""
+		if command in self._callbacks:
+			raise Exception('Previous callback for sync command `%s` not fired yet!' % command)
+		self._execute(command, callback, True, args)
 
 	def close(self):
 		"""Close connection to debugger."""
 		self._reader.stop()
 		self._conn.close()
+
+	def disconnect(self):
+		"""Disconnect from active debugger session and close connection."""
+		self.execute('disconnect')
+		self.close()
 
 	def on_disconnect(self, callback):
 		"""Register handler for `disconnect` event."""
