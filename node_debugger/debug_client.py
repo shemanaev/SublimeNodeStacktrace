@@ -87,14 +87,22 @@ class DebugClient(object):
 		self._execute(command, callback, True, args)
 
 	def close(self):
-		"""Close connection to debugger."""
+		"""Disconnect from active debugger session and close connection."""
+		try:
+			self.execute('disconnect')
+		except:
+			pass
+		self._stop_all()
+
+	def _stop_all(self):
 		self._reader.stop()
 		self._conn.close()
 
-	def disconnect(self):
-		"""Disconnect from active debugger session and close connection."""
-		self.execute('disconnect')
-		self.close()
+	def _disconnected(self, e):
+		cb = self._on_disconnect
+		if cb:
+			cb(e)
+		self._stop_all()
 
 	def on_disconnect(self, callback):
 		"""Register handler for `disconnect` event."""
@@ -127,8 +135,7 @@ class DebugReader(threading.Thread):
 				data = c._conn.recv(4 * 1024)
 			except (IOError) as e:
 				log('Connection closed', e)
-				cb = c._on_disconnect
-				if cb: cb(e)
+				c._disconnected(e)
 				break
 
 			buf = buf + data

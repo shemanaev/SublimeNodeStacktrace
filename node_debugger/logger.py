@@ -3,6 +3,7 @@
 debuggee = [
 	'debug_client',
 	'cmd_attach_debugger',
+	'cmd_start_debugger',
 ]
 
 def get(name):

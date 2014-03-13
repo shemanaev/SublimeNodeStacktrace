@@ -1,0 +1,4 @@
+{ "target": "node_debugger_start"
+, "shell_cmd": "node --debug-brk \"${file}\""
+, "selector": "source.js"
+}

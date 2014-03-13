@@ -1,7 +1,7 @@
 import sys
 
 from imp import reload
-from .mod_prefix import prefix, full_prefix
+from .globals import prefix, full_prefix
 
 reload_mods = []
 for mod in sys.modules:
@@ -12,12 +12,14 @@ mods_load_order = [
 	'',
 
 	'.logger',
+	'.config',
 	'.globals',
-	'.mod_prefix',
 	'.debug_client',
 
 	'.commands',
 	'.commands.attach_debugger',
+	'.commands.start_debugger',
+	'.commands.event_listener',
 ]
 
 for suffix in mods_load_order:
