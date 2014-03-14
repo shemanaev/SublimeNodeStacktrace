@@ -1,6 +1,7 @@
 import json
 import socket
 import threading
+import traceback
 
 from . import logger
 
@@ -38,7 +39,8 @@ class DebugClient(object):
 			c[k](data)
 			del c[k]
 		except (Exception) as e:
-			log('_invoke_callback', 'Callback not found', e)
+			tb = traceback.format_exc()
+			log('_invoke_callback', 'Callback not found', e, tb)
 
 	def _invoke_event(self, data):
 		log('_invoke_event', data)
@@ -47,7 +49,8 @@ class DebugClient(object):
 			k = data['event']
 			c[k](data)
 		except (Exception) as e:
-			log('_invoke_event', 'Event handler not found', e)
+			tb = traceback.format_exc()
+			log('_invoke_event', 'Event handler not found', e, tb)
 
 	def _make_request(self, data):
 		"""Generate request data."""
@@ -75,7 +78,6 @@ class DebugClient(object):
 		log('sent', buf)
 		self._conn.send(buf)
 
-	# TODO: optional context for callback?
 	def execute(self, command, callback=None, **args):
 		"""Execute remote V8 debugger command."""
 		self._execute(command, callback, False, args)

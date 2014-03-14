@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>name</key>
+  <string>node stacktrace</string>
+  <key>patterns</key>
+  <array>
+    <dict>
+      <key>captures</key>
+      <dict>
+        <key>1</key>
+        <dict>
+          <key>name</key>
+          <string>variable.other.settings</string>
+        </dict>
+        <key>2</key>
+        <dict>
+          <key>name</key>
+          <string>support.type.settings</string>
+        </dict>
+        <key>3</key>
+        <dict>
+          <key>name</key>
+          <string>variable.parameter.settings</string>
+        </dict>
+        <key>4</key>
+        <dict>
+          <key>name</key>
+          <string>variable.parameter.settings</string>
+        </dict>
+      </dict>
+      <key>match</key>
+      <string>^\s*(.+)\s\((.*)\:(\d+)\:(\d+)\)</string>
+      <key>name</key>
+      <string>node.debugger.output.stacktrace.object</string>
+    </dict>
+  </array>
+  <key>scopeName</key>
+  <string>node.debugger.output</string>
+  <key>uuid</key>
+  <string>d5864b12-585e-4914-9757-2b124c90becf</string>
+</dict>
+</plist>

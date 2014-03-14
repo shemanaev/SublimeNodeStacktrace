@@ -14,11 +14,13 @@ mods_load_order = [
 	'.logger',
 	'.config',
 	'.globals',
+	'.clicks',
 	'.debug_client',
 
 	'.commands',
 	'.commands.attach_debugger',
 	'.commands.start_debugger',
+	'.commands.insert_text',
 	'.commands.event_listener',
 ]
 

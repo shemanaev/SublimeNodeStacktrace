@@ -11,3 +11,5 @@ full_prefix = prefix + '.node_debugger'
 original_layout = None
 client = None
 st = None
+exception = None
+clicks = None
