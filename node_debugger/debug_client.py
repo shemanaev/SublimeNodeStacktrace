@@ -141,6 +141,7 @@ class DebugReader(threading.Thread):
 				break
 
 			buf = buf + data
+			log('buf', buf)
 
 			if needHeaders:
 				index = buf.find(b'\r\n\r\n')
@@ -157,9 +158,12 @@ class DebugReader(threading.Thread):
 				log('Headers', headers)
 
 			if not needHeaders:
-				if len(buf) != length: continue
+				log(len(buf), length)
+				if len(buf) < length: continue
 				# JSON body received
-				tmp = buf.decode('utf8')
+				t = buf[:length]
+				buf = buf[length:]
+				tmp = t.decode('utf8')
 				log('Data', tmp)
 				if len(tmp) > 0:
 					# TODO: handle json errors
@@ -168,5 +172,4 @@ class DebugReader(threading.Thread):
 						c._invoke_callback(tmp)
 					else: # type: 'event'
 						c._invoke_event(tmp)
-				buf = b''
 				needHeaders = True
