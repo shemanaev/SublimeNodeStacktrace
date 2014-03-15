@@ -9,15 +9,15 @@
       , "id": "package-settings"
       , "children":
         [
-          { "caption": "Node Debugger"
+          { "caption": "Node Stacktrace"
           , "children":
             [
               { "command": "open_file", "args":
-                { "file": "${packages}/Node Debugger/Node Debugger.sublime-settings" }
+                { "file": "${packages}/Node Stacktrace/node stacktrace.sublime-settings" }
                 , "caption": "Settings – Default"
               }
             , { "command": "open_file", "args":
-                { "file": "${packages}/User/Node Debugger.sublime-settings" }
+                { "file": "${packages}/User/node stacktrace.sublime-settings" }
                 , "caption": "Settings – User"
               }
             ]

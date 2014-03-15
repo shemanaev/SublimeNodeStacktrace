@@ -20,7 +20,7 @@ def open_file(data):
 		return
 	# TODO: fetch node's internal scripts with `scripts` request
 	window = sublime.active_window()
-	filename = '%s:%d:%d' % (data['script'], data['line'], data['column'])
+	filename = '%s:%d:%d' % (data['script'], data['line'], 1) # it's better to use '1' instead of data['column']
 	src = window.open_file(filename, sublime.ENCODED_POSITION)
 	window.set_view_index(src, 0, 0)
 	if 'exception' in data:
@@ -92,5 +92,5 @@ class NodeDebuggerAttachCommand(sublime_plugin.ApplicationCommand):
 			client.execute_sync('setexceptionbreak', lambda data: client.execute('continue', lambda x: str(1)), type='uncaught', enabled=True)
 		except (IOError) as e:
 			log('Error connecting to %s' % address, e)
-			message = 'Node Debugger: Error connecting to node.js instance at %s' % address
+			message = 'Error connecting to node.js instance at %s' % address
 			sublime.error_message(message)
