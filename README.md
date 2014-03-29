@@ -15,6 +15,15 @@ You also can attach to any node process that was run with `--debug-brk` flag by 
 ]
 ```
 
+## Installation
+
+#### Git
+Clone the repository by executing the following command in your Packages directory:
+```git clone https://github.com/DeniSix/SublimeNodeStacktrace.git NodeStacktrace```
+
+#### Download
+Get the latest [source from GitHub](https://github.com/DeniSix/SublimeNodeStacktrace/archive/master.zip), extract the source into your Packages directory and rename directory to `NodeStacktrace`.
+
 ## Limitations
 
 * node.js version at least 0.11.3 (you can't handle `uncaughtException` by debugger in earlier versions)
